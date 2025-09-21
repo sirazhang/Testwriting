@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>连接测试</title>
+</head>
+<body>
+    <h1>连接测试</h1>
+    <button onclick="testConnection()">测试连接</button>
+    <div id="result"></div>
+
+    <script>
+        async function testConnection() {
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = '测试中...';
+            
+            try {
+                // 测试主页
+                console.log('Testing homepage...');
+                const homeResponse = await fetch('/');
+                console.log('Homepage response:', homeResponse.status);
+                
+                if (homeResponse.ok) {
+                    resultDiv.innerHTML += '<p>✅ 主页连接成功</p>';
+                } else {
+                    resultDiv.innerHTML += '<p>❌ 主页连接失败: ' + homeResponse.status + '</p>';
+                }
+                
+                // 测试API
+                console.log('Testing API...');
+                const apiResponse = await fetch('/api/analyze', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        topic: 'Test topic',
+                        essay: 'This is a test essay.'
+                    })
+                });
+                
+                console.log('API response:', apiResponse.status);
+                
+                if (apiResponse.ok) {
+                    const data = await apiResponse.json();
+                    resultDiv.innerHTML += '<p>✅ API连接成功，返回数据: ' + JSON.stringify(data).substring(0, 100) + '...</p>';
+                } else {
+                    const errorText = await apiResponse.text();
+                    resultDiv.innerHTML += '<p>❌ API连接失败: ' + apiResponse.status + ' - ' + errorText + '</p>';
+                }
+                
+            } catch (error) {
+                console.error('Connection test error:', error);
+                resultDiv.innerHTML += '<p>❌ 连接错误: ' + error.message + '</p>';
+            }
+        }
+    </script>
+</body>
+</html>

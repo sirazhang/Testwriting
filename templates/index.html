@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>雅思作文批改系统</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <div class="header-title">
+                    <h1><i class="fas fa-pen-fancy"></i> 雅思作文批改系统</h1>
+                    <p>AI智能批改，专业反馈，助力雅思写作提升</p>
+                </div>
+                <div class="header-actions">
+                    <div id="user-info" class="user-info" style="display: none;">
+                        <span id="welcome-text">欢迎, <span id="current-username"></span></span>
+                        <button class="btn-secondary" onclick="goToProfile()">
+                            <i class="fas fa-user"></i> 个人中心
+                        </button>
+                        <button class="btn-secondary" onclick="logout()">
+                            <i class="fas fa-sign-out-alt"></i> 退出
+                        </button>
+                    </div>
+                    <div id="auth-buttons" class="auth-buttons">
+                        <button class="btn-secondary" onclick="showLoginModal()">
+                            <i class="fas fa-sign-in-alt"></i> 登录
+                        </button>
+                        <button class="btn-primary" onclick="showRegisterModal()">
+                            <i class="fas fa-user-plus"></i> 注册
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Step 1: Upload Section -->
+            <div id="upload-section" class="section active">
+                <div class="upload-container">
+                    <!-- Topic Section -->
+                    <div class="topic-section">
+                        <div class="section-header">
+                            <h2><i class="fas fa-question-circle"></i> 题目</h2>
+                            <button class="btn-hot-topic" onclick="getRandomTopic()">
+                                <i class="fas fa-fire"></i> 当季热题
+                            </button>
+                        </div>
+                        <div class="topic-content">
+                            <p>You should spend about 40 minutes on this task. Write about the following topic:</p>
+                            <textarea id="essay-topic" placeholder="请输入雅思作文题目..." rows="4"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Essay Section -->
+                    <div class="essay-section">
+                        <div class="section-header">
+                            <h2><i class="fas fa-file-text"></i> 作文原文</h2>
+                            <div class="action-buttons">
+                                <button class="btn-secondary" onclick="uploadImage()">
+                                    <i class="fas fa-image"></i> 图片转文字
+                                </button>
+                                <button class="btn-secondary" onclick="showConjunctionHelper()">
+                                    <i class="fas fa-link"></i> 连词助手
+                                </button>
+                            </div>
+                        </div>
+                        <div class="essay-content">
+                            <textarea id="essay-text" placeholder="请输入或粘贴您的作文内容..." rows="15"></textarea>
+                            <div class="word-count">
+                                <span id="word-count">words: 0</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="submit-section">
+                        <button id="submit-btn" class="btn-primary" onclick="submitEssay()">
+                            <i class="fas fa-check-circle"></i> 立即批改作文
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 2: Feedback Section -->
+            <div id="feedback-section" class="section">
+                <div class="feedback-container">
+                    <!-- Overall Score -->
+                    <div class="score-section">
+                        <div class="overall-score">
+                            <span id="overall-score" class="score">6.0</span>
+                            <span class="score-label">Overall Score</span>
+                        </div>
+                        <div class="overall-feedback">
+                            <h3>总体反馈</h3>
+                            <p id="overall-feedback-text">正在生成反馈...</p>
+                        </div>
+                    </div>
+
+                    <!-- IELTS Rubric Scores -->
+                    <div class="rubric-scores-section">
+                        <h3><i class="fas fa-star"></i> 雅思四项评分</h3>
+                        <div class="rubric-grid">
+                            <div class="rubric-card">
+                                <div class="rubric-title">Task Achievement</div>
+                                <div class="rubric-score" id="task-achievement-score">6</div>
+                                <div class="rubric-label">任务完成度</div>
+                            </div>
+                            <div class="rubric-card">
+                                <div class="rubric-title">Coherence & Cohesion</div>
+                                <div class="rubric-score" id="coherence-cohesion-score">6</div>
+                                <div class="rubric-label">连贯与衔接</div>
+                            </div>
+                            <div class="rubric-card">
+                                <div class="rubric-title">Lexical Resource</div>
+                                <div class="rubric-score" id="lexical-resource-score">6</div>
+                                <div class="rubric-label">词汇资源</div>
+                            </div>
+                            <div class="rubric-card">
+                                <div class="rubric-title">Grammatical Range</div>
+                                <div class="rubric-score" id="grammatical-range-score">6</div>
+                                <div class="rubric-label">语法范围与准确性</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Statistics Dashboard -->
+                    <div class="statistics-section">
+                        <h3><i class="fas fa-chart-bar"></i> 写作统计</h3>
+                        <div class="stats-grid">
+                            <div class="stat-card" id="linking-words-card">
+                                <div class="stat-number" id="linking-words-count">0</div>
+                                <div class="stat-label">Linking words</div>
+                                <div class="stat-goal" id="linking-words-goal">meeting the goal of 7 or more</div>
+                            </div>
+                            <div class="stat-card" id="word-repetition-card">
+                                <div class="stat-number" id="word-repetition-count">0</div>
+                                <div class="stat-label">Word repetition</div>
+                                <div class="stat-goal" id="word-repetition-goal">meeting the goal of 3 or fewer</div>
+                            </div>
+                            <div class="stat-card" id="grammar-mistakes-card">
+                                <div class="stat-number" id="grammar-mistakes-count">0</div>
+                                <div class="stat-label">Grammar mistakes</div>
+                                <div class="stat-goal" id="grammar-mistakes-goal">detected issues</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Feedback Tabs -->
+                    <div class="feedback-tabs">
+                        <button class="tab-btn active" onclick="showTab('grammar-vocab')">
+                            <i class="fas fa-spell-check"></i> 词汇及语法错误批注
+                        </button>
+                        <button class="tab-btn" onclick="showTab('task-response')">
+                            <i class="fas fa-tasks"></i> 写作任务回应情况
+                        </button>
+                        <button class="tab-btn" onclick="showTab('coherence')">
+                            <i class="fas fa-link"></i> 连贯与衔接
+                        </button>
+                        <button class="tab-btn" onclick="showTab('lexical')">
+                            <i class="fas fa-book"></i> 词汇丰富程度
+                        </button>
+                    </div>
+
+                    <!-- Tab Content -->
+                    <div class="tab-content">
+                        <!-- Grammar and Vocabulary Tab -->
+                        <div id="grammar-vocab" class="tab-panel active">
+                            <div class="grammar-corrections">
+                                <h3>语法错误批注</h3>
+                                <div id="grammar-list" class="corrections-list">
+                                    <!-- Grammar corrections will be populated here -->
+                                </div>
+                            </div>
+                            <div class="vocabulary-corrections">
+                                <h3>词汇错误批注</h3>
+                                <div id="vocabulary-list" class="corrections-list">
+                                    <!-- Vocabulary corrections will be populated here -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Task Response Tab -->
+                        <div id="task-response" class="tab-panel">
+                            <div class="criterion-section">
+                                <div class="criterion-score">
+                                    <span id="task-response-score" class="score">6</span>
+                                    <span class="score-label">写作任务回应情况</span>
+                                </div>
+                                <div class="criterion-content">
+                                    <div class="strengths">
+                                        <h4><i class="fas fa-check-circle"></i> 优势点</h4>
+                                        <ul id="task-response-strengths">
+                                            <!-- Strengths will be populated here -->
+                                        </ul>
+                                    </div>
+                                    <div class="improvements">
+                                        <h4><i class="fas fa-exclamation-triangle"></i> 建议改进的方面</h4>
+                                        <ul id="task-response-improvements">
+                                            <!-- Improvements will be populated here -->
+                                        </ul>
+                                    </div>
+                                    <div class="suggestions">
+                                        <h4><i class="fas fa-lightbulb"></i> 关于如何改进</h4>
+                                        <div id="task-response-suggestions">
+                                            <!-- Suggestions will be populated here -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Coherence and Cohesion Tab -->
+                        <div id="coherence" class="tab-panel">
+                            <div class="criterion-section">
+                                <div class="criterion-score">
+                                    <span id="coherence-score" class="score">6</span>
+                                    <span class="score-label">连贯与衔接</span>
+                                </div>
+                                <div class="criterion-content">
+                                    <div class="strengths">
+                                        <h4><i class="fas fa-check-circle"></i> 优势点</h4>
+                                        <ul id="coherence-strengths">
+                                            <!-- Strengths will be populated here -->
+                                        </ul>
+                                    </div>
+                                    <div class="improvements">
+                                        <h4><i class="fas fa-exclamation-triangle"></i> 建议改进的方面</h4>
+                                        <ul id="coherence-improvements">
+                                            <!-- Improvements will be populated here -->
+                                        </ul>
+                                    </div>
+                                    <div class="suggestions">
+                                        <h4><i class="fas fa-lightbulb"></i> 关于如何改进</h4>
+                                        <div id="coherence-suggestions">
+                                            <!-- Suggestions will be populated here -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Lexical Resource Tab -->
+                        <div id="lexical" class="tab-panel">
+                            <div class="criterion-section">
+                                <div class="criterion-score">
+                                    <span id="lexical-score" class="score">6</span>
+                                    <span class="score-label">词汇丰富程度</span>
+                                </div>
+                                <div class="criterion-content">
+                                    <div class="strengths">
+                                        <h4><i class="fas fa-check-circle"></i> 优势点</h4>
+                                        <ul id="lexical-strengths">
+                                            <!-- Strengths will be populated here -->
+                                        </ul>
+                                    </div>
+                                    <div class="improvements">
+                                        <h4><i class="fas fa-exclamation-triangle"></i> 建议改进的方面</h4>
+                                        <ul id="lexical-improvements">
+                                            <!-- Improvements will be populated here -->
+                                        </ul>
+                                    </div>
+                                    <div class="vocabulary-improvements">
+                                        <h4><i class="fas fa-arrow-right"></i> 词汇替换建议</h4>
+                                        <div id="vocabulary-replacements">
+                                            <!-- Vocabulary replacements will be populated here -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="feedback-actions">
+                        <div class="feedback-banner">
+                            <i class="fas fa-comment-dots"></i>
+                            欢迎对批改提意见，帮我们更好地为你服务！
+                        </div>
+                        <div class="action-buttons">
+                            <button class="btn-secondary" onclick="clearAndStartNew()">
+                                <i class="fas fa-trash"></i> 清除并输入作文
+                            </button>
+                            <button class="btn-primary" onclick="enterDialogueMode()">
+                                <i class="fas fa-comments"></i> 进入对话模式
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 3: Dialogue Mode -->
+            <div id="dialogue-section" class="section">
+                <div class="dialogue-container">
+                    <div class="dialogue-header">
+                        <h2><i class="fas fa-comments"></i> 对话模式</h2>
+                        <p>您可以询问关于批改的问题，或提交修改后的作文</p>
+                    </div>
+                    
+                    <div class="chat-container">
+                        <div id="chat-messages" class="chat-messages">
+                            <!-- Chat messages will be populated here -->
+                        </div>
+                        
+                        <div class="chat-input">
+                            <textarea id="chat-input" placeholder="请输入您的问题..." rows="3"></textarea>
+                            <button class="btn-primary" onclick="sendMessage()">
+                                <i class="fas fa-paper-plane"></i> 发送
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="dialogue-actions">
+                        <button class="btn-secondary" onclick="backToFeedback()">
+                            <i class="fas fa-arrow-left"></i> 返回反馈页面
+                        </button>
+                        <button class="btn-primary" onclick="submitRevisedEssay()">
+                            <i class="fas fa-upload"></i> 提交修改后的作文
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="loading-overlay" class="loading-overlay">
+        <div class="loading-spinner">
+            <i class="fas fa-spinner fa-spin"></i>
+            <p>AI正在分析您的作文，请稍候...</p>
+        </div>
+    </div>
+
+    <!-- Login Modal -->
+    <div id="login-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-sign-in-alt"></i> 登录</h2>
+                <span class="close" onclick="closeLoginModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="login-form">
+                    <div class="form-group">
+                        <label for="login-username">用户名</label>
+                        <input type="text" id="login-username" name="username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="login-password">密码</label>
+                        <input type="password" id="login-password" name="password" required>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn-primary">登录</button>
+                        <button type="button" class="btn-secondary" onclick="switchToRegister()">注册账号</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Register Modal -->
+    <div id="register-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-user-plus"></i> 注册</h2>
+                <span class="close" onclick="closeRegisterModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="register-form">
+                    <div class="form-group">
+                        <label for="register-username">用户名</label>
+                        <input type="text" id="register-username" name="username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="register-email">邮箱</label>
+                        <input type="email" id="register-email" name="email" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="register-password">密码</label>
+                        <input type="password" id="register-password" name="password" required>
+                    </div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn-primary">注册</button>
+                        <button type="button" class="btn-secondary" onclick="switchToLogin()">已有账号？登录</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Conjunction Helper Modal -->
+    <div id="conjunction-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2><i class="fas fa-link"></i> 连词助手</h2>
+                <span class="close" onclick="closeConjunctionModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div id="conjunction-content">
+                    <!-- Conjunction data will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

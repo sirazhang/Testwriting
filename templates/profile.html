@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>个人中心 - 雅思作文批改系统</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-content">
+                <h1><i class="fas fa-pen-fancy"></i> 雅思作文批改系统</h1>
+                <div class="header-actions">
+                    <button class="btn-secondary" onclick="goHome()">
+                        <i class="fas fa-home"></i> 返回首页
+                    </button>
+                    <button class="btn-secondary" onclick="logout()">
+                        <i class="fas fa-sign-out-alt"></i> 退出登录
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Personal Info Section -->
+            <div class="profile-section">
+                <div class="profile-header">
+                    <div class="profile-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="profile-info">
+                        <h2 id="username">加载中...</h2>
+                        <p id="user-email">加载中...</p>
+                        <p class="join-date">加入时间: <span id="join-date">加载中...</span></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Achievement Section -->
+            <div class="achievement-section">
+                <h3><i class="fas fa-trophy"></i> 成就统计</h3>
+                <div class="achievement-grid">
+                    <div class="achievement-card">
+                        <div class="achievement-title">总体平均分</div>
+                        <div class="achievement-score" id="overall-average">0.0</div>
+                        <div class="achievement-label">/ 9.0</div>
+                    </div>
+                    <div class="achievement-card">
+                        <div class="achievement-title">练习次数</div>
+                        <div class="achievement-score" id="total-essays">0</div>
+                        <div class="achievement-label">次</div>
+                    </div>
+                </div>
+                
+                <div class="rubric-achievements">
+                    <h4>各项能力分析</h4>
+                    <div class="rubric-bars">
+                        <div class="rubric-bar">
+                            <div class="rubric-label">Task Achievement</div>
+                            <div class="rubric-progress">
+                                <div class="progress-bar" id="task-progress"></div>
+                                <span class="progress-text" id="task-score">0.0/9.0</span>
+                            </div>
+                        </div>
+                        <div class="rubric-bar">
+                            <div class="rubric-label">Coherence & Cohesion</div>
+                            <div class="rubric-progress">
+                                <div class="progress-bar" id="coherence-progress"></div>
+                                <span class="progress-text" id="coherence-score">0.0/9.0</span>
+                            </div>
+                        </div>
+                        <div class="rubric-bar">
+                            <div class="rubric-label">Lexical Resource</div>
+                            <div class="rubric-progress">
+                                <div class="progress-bar" id="lexical-progress"></div>
+                                <span class="progress-text" id="lexical-score">0.0/9.0</span>
+                            </div>
+                        </div>
+                        <div class="rubric-bar">
+                            <div class="rubric-label">Grammatical Range</div>
+                            <div class="rubric-progress">
+                                <div class="progress-bar" id="grammar-progress"></div>
+                                <span class="progress-text" id="grammar-score">0.0/9.0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Essay History Section -->
+            <div class="history-section">
+                <h3><i class="fas fa-history"></i> 批改历史</h3>
+                <div class="history-controls">
+                    <button class="btn-secondary" onclick="refreshHistory()">
+                        <i class="fas fa-refresh"></i> 刷新
+                    </button>
+                </div>
+                <div class="history-table-container">
+                    <table class="history-table">
+                        <thead>
+                            <tr>
+                                <th>时间</th>
+                                <th>类别</th>
+                                <th>题目</th>
+                                <th>总分</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="history-tbody">
+                            <tr>
+                                <td colspan="5" class="loading">加载中...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="pagination" id="pagination">
+                    <!-- 分页控件将在这里动态生成 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Essay Detail Modal -->
+    <div id="essay-detail-modal" class="modal">
+        <div class="modal-content large">
+            <div class="modal-header">
+                <h2><i class="fas fa-file-text"></i> 作文详情</h2>
+                <span class="close" onclick="closeEssayDetail()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div id="essay-detail-content">
+                    <!-- 作文详情将在这里显示 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/profile.js') }}"></script>
+</body>
+</html>
